@@ -2,4 +2,4 @@
  Headers for piMath
  */
 
-int add(int a, int b);
+unsigned char piDigit(long n);

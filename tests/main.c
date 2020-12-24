@@ -5,6 +5,6 @@
 #include <piMath.h>
 
 int main() {
-    printf("Hello World from tests %d\n", add(1,1));
+    printf("Hello World from tests %d\n", piDigit(1));
     return 0;
 }
