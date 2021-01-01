@@ -16,3 +16,15 @@ Pre-processing would include finding locations in Pi of all possible values of t
 Would be a key-value store, where the key would be a name/ id, and the value would be a series of block data locations
 
 https://web.archive.org/web/20150717041905/http://en.literateprograms.org/Pi_with_the_BBP_formula_(Python)
+
+Uses GMP Library:
+
+- `sudo apt install libgmp-dev` https://askubuntu.com/questions/207724/how-to-install-the-latest-gmp-library-in-12-04
+- https://gmplib.org/gmp-man-6.2.1.pdf
+- need to build with `-lgmp` as compiler argument
+
+https://gmplib.org/pi-with-gmp
+
+## Ideas:
+
+Support a varied number of irrational numbers? https://www.mathsisfun.com/irrational-numbers.html

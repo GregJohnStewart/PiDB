@@ -1,9 +1,30 @@
-/*
- Pi Math functions
+/* Pi computation using Chudnovsky's algortithm.
 
- Main Source: https://gmplib.org/pi-with-gmp
- (adjusted for what we need)
+ * Copyright 2002, 2005 Hanhong Xue (macroxue at yahoo dot com)
+
+ * Slightly modified 2005 by Torbjorn Granlund to allow more than 2G
+   digits to be computed.
+
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHORS ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+ * EVENT SHALL THE AUTHORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -11,7 +32,6 @@
 #include <string.h>
 #include <time.h>
 #include <gmp.h>
-#include <stdbool.h>
 
 #define A   13591409
 #define B   545140134
@@ -55,7 +75,8 @@ cputime ()
 #include <sys/time.h>
 #include <sys/resource.h>
 
-int static cputime() {
+int
+static cputime() {
 	struct rusage rus;
 
 	getrusage(0, &rus);
@@ -124,7 +145,8 @@ my_sqrt_ui(mpf_t r, unsigned long x) {
 #define my_div mpf_div
 #else
 
-static void my_div(mpf_t r, mpf_t y, mpf_t x) {
+static void
+my_div(mpf_t r, mpf_t y, mpf_t x) {
 	unsigned long prec, bits, prec0;
 
 	prec0 = mpf_get_prec(r);
@@ -197,7 +219,8 @@ static fac_t ftmp, fmul;
 
 #define INIT_FACS 32
 
-static void fac_show(fac_t f) {
+static void
+fac_show(fac_t f) {
 	long int i;
 	for (i = 0; i < f[0].num_facs; i++)
 		if (f[0].pow[i] == 1)
@@ -207,11 +230,13 @@ static void fac_show(fac_t f) {
 	printf("\n");
 }
 
-static void fac_reset(fac_t f) {
+static void
+fac_reset(fac_t f) {
 	f[0].num_facs = 0;
 }
 
-static void fac_init_size(fac_t f, long int s) {
+static void
+fac_init_size(fac_t f, long int s) {
 	if (s < INIT_FACS)
 		s = INIT_FACS;
 
@@ -222,15 +247,18 @@ static void fac_init_size(fac_t f, long int s) {
 	fac_reset(f);
 }
 
-static void fac_init(fac_t f) {
+static void
+fac_init(fac_t f) {
 	fac_init_size(f, INIT_FACS);
 }
 
-static void fac_clear(fac_t f) {
+static void
+fac_clear(fac_t f) {
 	free(f[0].fac);
 }
 
-static void fac_resize(fac_t f, long int s) {
+static void
+fac_resize(fac_t f, long int s) {
 	if (f[0].max_facs < s) {
 		fac_clear(f);
 		fac_init_size(f, s);
@@ -238,7 +266,8 @@ static void fac_resize(fac_t f, long int s) {
 }
 
 /* f = base^pow */
-static void fac_set_bp(fac_t f, unsigned long base, long int pow) {
+static void
+fac_set_bp(fac_t f, unsigned long base, long int pow) {
 	long int i;
 	assert(base < sieve_size);
 	for (i = 0, base /= 2; base > 0; i++, base = sieve[base].nxt) {
@@ -250,7 +279,8 @@ static void fac_set_bp(fac_t f, unsigned long base, long int pow) {
 }
 
 /* r = f*g */
-static void fac_mul2(fac_t r, fac_t f, fac_t g) {
+static void
+fac_mul2(fac_t r, fac_t f, fac_t g) {
 	long int i, j, k;
 
 	for (i = j = k = 0; i < f[0].num_facs && j < g[0].num_facs; k++) {
@@ -282,7 +312,8 @@ static void fac_mul2(fac_t r, fac_t f, fac_t g) {
 }
 
 /* f *= g */
-static void fac_mul(fac_t f, fac_t g) {
+static void
+fac_mul(fac_t f, fac_t g) {
 	fac_t tmp;
 	fac_resize(fmul, f[0].num_facs + g[0].num_facs);
 	fac_mul2(fmul, f, g);
@@ -292,13 +323,15 @@ static void fac_mul(fac_t f, fac_t g) {
 }
 
 /* f *= base^pow */
-static void fac_mul_bp(fac_t f, unsigned long base, unsigned long pow) {
+static void
+fac_mul_bp(fac_t f, unsigned long base, unsigned long pow) {
 	fac_set_bp(ftmp, base, pow);
 	fac_mul(f, ftmp);
 }
 
 /* remove factors of power 0 */
-static void fac_compact(fac_t f) {
+static void
+fac_compact(fac_t f) {
 	long int i, j;
 	for (i = 0, j = 0; i < f[0].num_facs; i++) {
 		if (f[0].pow[i] > 0) {
@@ -313,7 +346,8 @@ static void fac_compact(fac_t f) {
 }
 
 /* convert factorized form to number */
-static void bs_mul(mpz_t r, long int a, long int b) {
+static void
+bs_mul(mpz_t r, long int a, long int b) {
 	long int i, j;
 	if (b - a <= 32) {
 		mpz_set_ui(r, 1);
@@ -339,7 +373,8 @@ void mpz_divexact_pre (mpz_ptr, mpz_srcptr, mpz_srcptr, mpz_srcptr);
 #endif
 
 /* f /= gcd(f,g), g /= gcd(f,g) */
-static void fac_remove_gcd(mpz_t p, fac_t fp, mpz_t g, fac_t fg) {
+static void
+fac_remove_gcd(mpz_t p, fac_t fp, mpz_t g, fac_t fg) {
 	long int i, j, k, c;
 	fac_resize(fmul, min(fp->num_facs, fg->num_facs));
 	for (i = j = k = 0; i < fp->num_facs && j < fg->num_facs;) {
@@ -400,7 +435,8 @@ static double progress = 0, percent;
 static long gcd_time = 0;
 
 /* binary splitting */
-static void bs(unsigned long a, unsigned long b, unsigned gflag, long int level) {
+static void
+bs(unsigned long a, unsigned long b, unsigned gflag, long int level) {
 	unsigned long i, mid;
 	int ccc;
 
@@ -504,7 +540,8 @@ static void bs(unsigned long a, unsigned long b, unsigned gflag, long int level)
 	}
 }
 
-static void build_sieve(long int n, sieve_t *s) {
+static void
+build_sieve(long int n, sieve_t *s) {
 	long int m, i, j, k;
 
 	sieve_size = n;
@@ -536,7 +573,8 @@ static void build_sieve(long int n, sieve_t *s) {
 	}
 }
 
-int pi(int argc, char *argv[]) {
+int
+main(int argc, char *argv[]) {
 	mpf_t pi,
 			qi;
 
@@ -715,8 +753,4 @@ int pi(int argc, char *argv[]) {
 	mpf_clear(t1);
 	mpf_clear(t2);
 	exit(0);
-}
-
-unsigned char piDigit(unsigned long int n) {
-	return 0;
 }
