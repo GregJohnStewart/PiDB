@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <gmp.h>
 #include <stdbool.h>
 
@@ -38,39 +37,12 @@ static char *prog_name;
 #define CHECK_MEMUSAGE
 #endif
 
-
-/* Return user CPU time measured in milliseconds.  */
-
-#if !defined (__sun) \
- && (defined (USG) || defined (__SVR4) || defined (_UNICOS) \
- || defined (__hpux))
-static int
-cputime ()
-{
-  return (int) ((double) clock () * 1000 / CLOCKS_PER_SEC);
-}
-#else
-
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-
-int static cputime() {
-	struct rusage rus;
-
-	getrusage(0, &rus);
-	return rus.ru_utime.tv_sec * 1000 + rus.ru_utime.tv_usec / 1000;
-}
-
-#endif
-
 /*///////////////////////////////////////////////////////////////////////////*/
 
 static mpf_t t1, t2;
 
 /* r = sqrt(x) */
-static void
-my_sqrt_ui(mpf_t r, unsigned long x) {
+static void my_sqrt_ui(mpf_t r, unsigned long x) {
 	unsigned long prec, bits, prec0;
 
 	prec0 = mpf_get_prec(r);
@@ -196,16 +168,6 @@ static long int sieve_size;
 static fac_t ftmp, fmul;
 
 #define INIT_FACS 32
-
-static void fac_show(fac_t f) {
-//	long int i;
-//	for (i = 0; i < f[0].num_facs; i++)
-//		if (f[0].pow[i] == 1)
-////			printf("%ld ", f[0].fac[i]);
-//		else
-////			printf("%ld^%ld ", f[0].fac[i], f[0].pow[i]);
-////	printf("\n");
-}
 
 static void fac_reset(fac_t f) {
 	f[0].num_facs = 0;
@@ -379,11 +341,9 @@ static void fac_remove_gcd(mpz_t p, fac_t fp, mpz_t g, fac_t fg) {
 
 /*///////////////////////////////////////////////////////////////////////////*/
 
-static int out = 3;
 static mpz_t *pstack, *qstack, *gstack;
 static fac_t *fpstack, *fgstack;
 static long int top = 0;
-static double progress = 0, percent;
 
 #define p1 (pstack[top])
 #define q1 (qstack[top])
@@ -437,12 +397,6 @@ static void bs(unsigned long a, unsigned long b, unsigned gflag, long int level)
 		fac_mul_bp(fg1, 6 * b - 1, 1);    /* 6b-1 */
 		fac_mul_bp(fg1, 6 * b - 5, 1);    /* 6b-5 */
 
-		if (b > (int) (progress)) {
-//			printf(".");
-//			fflush(stdout);
-			progress += percent * 2;
-		}
-
 	} else {
 		/*
 		  p(a,b) = p(a,m) * p(m,b)
@@ -456,21 +410,13 @@ static void bs(unsigned long a, unsigned long b, unsigned gflag, long int level)
 		bs(mid, b, gflag, level + 1);
 		top--;
 
-		if (level == 0)
-			puts("");
-
 		ccc = level == 0;
 
 		if (ccc) CHECK_MEMUSAGE;
 
-		if (level >= 4) {           /* tuning parameter */
-#if 0
-			long t = cputime();
-#endif
+		if (level >= 4) {
+			/* tuning parameter */
 			fac_remove_gcd(p2, fp2, g1, fg1);
-#if 0
-			gcd_time += cputime()-t;
-#endif
 		}
 
 		if (ccc) CHECK_MEMUSAGE;
@@ -493,15 +439,6 @@ static void bs(unsigned long a, unsigned long b, unsigned gflag, long int level)
 			fac_mul(fg1, fg2);
 		}
 	}
-
-//	if (out & 2) {
-//		printf("p(%ld,%ld)=", a, b);
-//		fac_show(fp1);
-//		if (gflag) {
-//			printf("g(%ld,%ld)=", a, b);
-//			fac_show(fg1);
-//		}
-//	}
 }
 
 static void build_sieve(long int n, sieve_t *s) {
@@ -546,31 +483,15 @@ char *pi(unsigned long int d) {
 
 	unsigned long psize,
 			qsize;
-	long begin,
-			mid0,
-			mid1,
-			mid2,
-			mid3,
-			mid4,
-			end;
 
 	terms = d / DIGITS_PER_ITER;
 	while ((1L << depth) < terms)
 		depth++;
 	depth++;
-	percent = terms / 100.0;
-//	printf("#terms=%ld, depth=%ld\n", terms, depth);
-
-//	begin = cputime();
-//	printf("sieve   ");
-//	fflush(stdout);
 
 	sieve_size = max(3 * 5 * 23 * 29 + 1, terms * 6);
 	sieve = (sieve_t *) malloc(sizeof(sieve_t) * sieve_size / 2);
 	build_sieve(sieve_size, sieve);
-
-//	mid0 = cputime();
-//	printf("time = %6.3f\n", (double) (mid0 - begin) / 1000);
 
 	/* allocate stacks */
 	pstack = malloc(sizeof(mpz_t) * depth);
@@ -600,12 +521,6 @@ char *pi(unsigned long int d) {
 	} else {
 		bs(0, terms, 0, 0);
 	}
-
-//	mid1 = cputime();
-//	printf("\nbs      time = %6.3f\n", (double) (mid1 - mid0) / 1000);
-//	printf("   gcd  time = %6.3f\n", (double) (gcd_time) / 1000);
-
-	/* printf("misc    "); fflush(stdout); */
 
 	/* free some resources */
 	free(sieve);
@@ -659,46 +574,16 @@ char *pi(unsigned long int d) {
 	free(pstack);
 	free(qstack);
 
-	mid2 = cputime();
-	/* printf("time = %6.3f\n", (double)(mid2-mid1)/1000); */
-
 	/* initialize temp float variables for sqrt & div */
 	mpf_init(t1);
 	mpf_init(t2);
-	/* mpf_set_prec_raw(t1, mpf_get_prec(pi)); */
 
-	/* final step */
-//	printf("div     ");
-//	fflush(stdout);
 	my_div(qi, pi, qi);
-//	mid3 = cputime();
-//	printf("time = %6.3f\n", (double) (mid3 - mid2) / 1000);
 
-//	printf("sqrt    ");
-//	fflush(stdout);
 	my_sqrt_ui(pi, C);
-//	mid4 = cputime();
-//	printf("time = %6.3f\n", (double) (mid4 - mid3) / 1000);
 
-//	printf("mul     ");
-//	fflush(stdout);
 	mpf_mul(qi, qi, pi);
-//	end = cputime();
-//	printf("time = %6.3f\n", (double) (end - mid4) / 1000);
 
-//	printf("total   time = %6.3f\n", (double) (end - begin) / 1000);
-//	fflush(stdout);
-
-//	printf("   P size=%ld digits (%f)\n"
-//		   "   Q size=%ld digits (%f)\n",
-//		   psize, (double) psize / d, qsize, (double) qsize / d);
-
-	/* output Pi and timing statistics */
-//	if (out & 1) {
-//		printf("pi(0,%ld)=\n", terms);
-//		mpf_out_str(stdout, 10, d + 2, qi);
-//		printf("\n");
-//	}
 	mp_exp_t exp = 1;
 	char *output = mpf_get_str(
 			NULL, // string to put in
@@ -723,6 +608,6 @@ unsigned int piDigit(unsigned long int n) {
 		digitsToGet = 100;
 	}
 	char *piVal = pi(digitsToGet);
-	printf("got val\n");
+//	printf("got val\n");
 	return piVal[n] - '0';
 }
