@@ -198,13 +198,13 @@ static fac_t ftmp, fmul;
 #define INIT_FACS 32
 
 static void fac_show(fac_t f) {
-	long int i;
-	for (i = 0; i < f[0].num_facs; i++)
-		if (f[0].pow[i] == 1)
-			printf("%ld ", f[0].fac[i]);
-		else
-			printf("%ld^%ld ", f[0].fac[i], f[0].pow[i]);
-	printf("\n");
+//	long int i;
+//	for (i = 0; i < f[0].num_facs; i++)
+//		if (f[0].pow[i] == 1)
+////			printf("%ld ", f[0].fac[i]);
+//		else
+////			printf("%ld^%ld ", f[0].fac[i], f[0].pow[i]);
+////	printf("\n");
 }
 
 static void fac_reset(fac_t f) {
@@ -438,8 +438,8 @@ static void bs(unsigned long a, unsigned long b, unsigned gflag, long int level)
 		fac_mul_bp(fg1, 6 * b - 5, 1);    /* 6b-5 */
 
 		if (b > (int) (progress)) {
-			printf(".");
-			fflush(stdout);
+//			printf(".");
+//			fflush(stdout);
 			progress += percent * 2;
 		}
 
@@ -494,14 +494,14 @@ static void bs(unsigned long a, unsigned long b, unsigned gflag, long int level)
 		}
 	}
 
-	if (out & 2) {
-		printf("p(%ld,%ld)=", a, b);
-		fac_show(fp1);
-		if (gflag) {
-			printf("g(%ld,%ld)=", a, b);
-			fac_show(fg1);
-		}
-	}
+//	if (out & 2) {
+//		printf("p(%ld,%ld)=", a, b);
+//		fac_show(fp1);
+//		if (gflag) {
+//			printf("g(%ld,%ld)=", a, b);
+//			fac_show(fg1);
+//		}
+//	}
 }
 
 static void build_sieve(long int n, sieve_t *s) {
@@ -536,12 +536,11 @@ static void build_sieve(long int n, sieve_t *s) {
 	}
 }
 
-int pi(int argc, char *argv[]) {
+char *pi(unsigned long int d) {
 	mpf_t pi,
 			qi;
 
-	long int d = 100,
-			i,
+	long i,
 			depth = 1,
 			terms;
 
@@ -555,30 +554,23 @@ int pi(int argc, char *argv[]) {
 			mid4,
 			end;
 
-	prog_name = argv[0];
-
-	if (argc > 1)
-		d = strtoul(argv[1], 0, 0);
-	if (argc > 2)
-		out = atoi(argv[2]);
-
 	terms = d / DIGITS_PER_ITER;
 	while ((1L << depth) < terms)
 		depth++;
 	depth++;
 	percent = terms / 100.0;
-	printf("#terms=%ld, depth=%ld\n", terms, depth);
+//	printf("#terms=%ld, depth=%ld\n", terms, depth);
 
-	begin = cputime();
-	printf("sieve   ");
-	fflush(stdout);
+//	begin = cputime();
+//	printf("sieve   ");
+//	fflush(stdout);
 
 	sieve_size = max(3 * 5 * 23 * 29 + 1, terms * 6);
 	sieve = (sieve_t *) malloc(sizeof(sieve_t) * sieve_size / 2);
 	build_sieve(sieve_size, sieve);
 
-	mid0 = cputime();
-	printf("time = %6.3f\n", (double) (mid0 - begin) / 1000);
+//	mid0 = cputime();
+//	printf("time = %6.3f\n", (double) (mid0 - begin) / 1000);
 
 	/* allocate stacks */
 	pstack = malloc(sizeof(mpz_t) * depth);
@@ -609,9 +601,9 @@ int pi(int argc, char *argv[]) {
 		bs(0, terms, 0, 0);
 	}
 
-	mid1 = cputime();
-	printf("\nbs      time = %6.3f\n", (double) (mid1 - mid0) / 1000);
-	printf("   gcd  time = %6.3f\n", (double) (gcd_time) / 1000);
+//	mid1 = cputime();
+//	printf("\nbs      time = %6.3f\n", (double) (mid1 - mid0) / 1000);
+//	printf("   gcd  time = %6.3f\n", (double) (gcd_time) / 1000);
 
 	/* printf("misc    "); fflush(stdout); */
 
@@ -676,37 +668,45 @@ int pi(int argc, char *argv[]) {
 	/* mpf_set_prec_raw(t1, mpf_get_prec(pi)); */
 
 	/* final step */
-	printf("div     ");
-	fflush(stdout);
+//	printf("div     ");
+//	fflush(stdout);
 	my_div(qi, pi, qi);
-	mid3 = cputime();
-	printf("time = %6.3f\n", (double) (mid3 - mid2) / 1000);
+//	mid3 = cputime();
+//	printf("time = %6.3f\n", (double) (mid3 - mid2) / 1000);
 
-	printf("sqrt    ");
-	fflush(stdout);
+//	printf("sqrt    ");
+//	fflush(stdout);
 	my_sqrt_ui(pi, C);
-	mid4 = cputime();
-	printf("time = %6.3f\n", (double) (mid4 - mid3) / 1000);
+//	mid4 = cputime();
+//	printf("time = %6.3f\n", (double) (mid4 - mid3) / 1000);
 
-	printf("mul     ");
-	fflush(stdout);
+//	printf("mul     ");
+//	fflush(stdout);
 	mpf_mul(qi, qi, pi);
-	end = cputime();
-	printf("time = %6.3f\n", (double) (end - mid4) / 1000);
+//	end = cputime();
+//	printf("time = %6.3f\n", (double) (end - mid4) / 1000);
 
-	printf("total   time = %6.3f\n", (double) (end - begin) / 1000);
-	fflush(stdout);
+//	printf("total   time = %6.3f\n", (double) (end - begin) / 1000);
+//	fflush(stdout);
 
-	printf("   P size=%ld digits (%f)\n"
-		   "   Q size=%ld digits (%f)\n",
-		   psize, (double) psize / d, qsize, (double) qsize / d);
+//	printf("   P size=%ld digits (%f)\n"
+//		   "   Q size=%ld digits (%f)\n",
+//		   psize, (double) psize / d, qsize, (double) qsize / d);
 
 	/* output Pi and timing statistics */
-	if (out & 1) {
-		printf("pi(0,%ld)=\n", terms);
-		mpf_out_str(stdout, 10, d + 2, qi);
-		printf("\n");
-	}
+//	if (out & 1) {
+//		printf("pi(0,%ld)=\n", terms);
+//		mpf_out_str(stdout, 10, d + 2, qi);
+//		printf("\n");
+//	}
+	mp_exp_t exp = 1;
+	char *output = mpf_get_str(
+			NULL, // string to put in
+			&exp,
+			10, // base to output in
+			d + 2, //number of digits
+			qi //value
+	);
 
 	/* free float resources */
 	mpf_clear(pi);
@@ -714,9 +714,15 @@ int pi(int argc, char *argv[]) {
 
 	mpf_clear(t1);
 	mpf_clear(t2);
-	exit(0);
+	return output;
 }
 
-unsigned char piDigit(unsigned long int n) {
-	return 0;
+unsigned int piDigit(unsigned long int n) {
+	unsigned long int digitsToGet = n;
+	if (digitsToGet < 100) {
+		digitsToGet = 100;
+	}
+	char *piVal = pi(digitsToGet);
+	printf("got val\n");
+	return piVal[n] - '0';
 }
