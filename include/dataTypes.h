@@ -19,8 +19,13 @@ struct compressedBlock{
 
 // data blocks, block size, irrational
 struct compressedData{
+	// the irrational number used to compress the data
 	enum irrational number;
+	// the size of the blocks used
 	unsigned long int blockSize;
+	// the number of blocks we ended up with
+	unsigned long int numBlocks;
+	// pointer to th array of blocks
 	struct compressedBlock* blocks;
 };
 

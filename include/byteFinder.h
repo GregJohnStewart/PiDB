@@ -9,4 +9,4 @@
 
 #include "dataTypes.h"
 
-struct compressedData compress(enum irrational, char data[]);
+struct compressedData compress(enum irrational, unsigned int, unsigned int, char data[]);
