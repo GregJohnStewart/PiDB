@@ -473,7 +473,7 @@ static void build_sieve(long int n, sieve_t *s) {
 	}
 }
 
-char *pi(unsigned long int d) {
+char *piString(unsigned long int d) {
 	mpf_t pi,
 			qi;
 
@@ -607,7 +607,7 @@ unsigned int piDigit(unsigned long int n) {
 	if (digitsToGet < 100) {
 		digitsToGet = 100;
 	}
-	char *piVal = pi(digitsToGet);
+	char *piVal = piString(digitsToGet);
 //	printf("got val\n");
 	return piVal[n] - '0';
 }

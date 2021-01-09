@@ -5,10 +5,11 @@
 #ifndef TEST_OUT_DATATYPES_H
 #define TEST_OUT_DATATYPES_H
 
+#define numIrrationals 1
 enum irrational{pi};
 
 // cache entries for keeping track of previously calculated numbers
-struct irratCachEntry{
+struct irratCacheEntry{
 	enum irrational number;
 	char* data;
 };
