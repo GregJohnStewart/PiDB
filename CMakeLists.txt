@@ -42,8 +42,8 @@ add_executable(${CMAKE_PROJECT_NAME} "src/main.c" ${LIB_SOURCES})
 #
 # Second project (test executable)
 #
-project(test.out)
-add_executable(${CMAKE_PROJECT_NAME} "tests/main.c" ${LIB_SOURCES})
+#project(test.out)
+#add_executable(${CMAKE_PROJECT_NAME} "tests/main.c" ${LIB_SOURCES})
 
 # Extra
 
